@@ -1,65 +1,62 @@
-import Image from "next/image";
+import Link from "next/link";
+import { BookOpen, Coffee, Feather } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="flex flex-col items-center justify-center pt-24 px-4 space-y-12">
+      {/* Hero Section */}
+      <section className="text-center space-y-6 max-w-3xl">
+        <h1 className="text-5xl md:text-6xl font-serif font-bold text-coffee-950 tracking-tight">
+          Your Cozy Corner for <br className="hidden md:block" />
+          <span className="text-coffee-600 italic">Reading & Writing</span>
+        </h1>
+        <p className="text-lg text-coffee-700 max-w-2xl mx-auto leading-relaxed">
+          Welcome to Ink & Brew. Grab a virtual coffee, explore a library of independent novels,
+          or start writing your own masterpiece in our distraction-free editor.
+        </p>
+        <div className="flex items-center justify-center gap-4 pt-4">
+          <Link href="/library">
+            <Button size="lg" className="gap-2 bg-coffee-800 hover:bg-coffee-900 border-none">
+              <BookOpen className="w-5 h-5" />
+              Browse Library
+            </Button>
+          </Link>
+          <Link href="/write">
+            <Button size="lg" variant="outline" className="gap-2">
+              <Feather className="w-5 h-5" />
+              Start Writing
+            </Button>
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Feature grid */}
+      <section className="grid md:grid-cols-3 gap-8 max-w-5xl w-full pt-16">
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-coffee-100 flex flex-col items-center text-center space-y-4 hover:shadow-md transition-shadow">
+          <div className="w-12 h-12 bg-coffee-50 rounded-full flex items-center justify-center text-coffee-600">
+            <BookOpen className="w-6 h-6" />
+          </div>
+          <h3 className="font-serif text-xl font-bold text-coffee-900">Curated Library</h3>
+          <p className="text-coffee-600 text-sm">Discover stories from upcoming authors across all genres in a beautiful reading environment.</p>
         </div>
-      </main>
+
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-coffee-100 flex flex-col items-center text-center space-y-4 hover:shadow-md transition-shadow">
+          <div className="w-12 h-12 bg-coffee-50 rounded-full flex items-center justify-center text-coffee-600">
+            <Feather className="w-6 h-6" />
+          </div>
+          <h3 className="font-serif text-xl font-bold text-coffee-900">Distraction-Free Editor</h3>
+          <p className="text-coffee-600 text-sm">Draft your chapters with autosave and simple formatting right from your browser.</p>
+        </div>
+
+        <div className="bg-white p-8 rounded-2xl shadow-sm border border-coffee-100 flex flex-col items-center text-center space-y-4 hover:shadow-md transition-shadow">
+          <div className="w-12 h-12 bg-coffee-50 rounded-full flex items-center justify-center text-coffee-600">
+            <Coffee className="w-6 h-6" />
+          </div>
+          <h3 className="font-serif text-xl font-bold text-coffee-900">Coffee Shop Vibe</h3>
+          <p className="text-coffee-600 text-sm">Enjoy a warm, minimalistic paper-like UI that makes reading and writing a pleasure.</p>
+        </div>
+      </section>
     </div>
   );
 }
