@@ -46,7 +46,23 @@ export function useBookDraftAutoSave({
 
     setSaveStatus("saving");
     try {
-      await saveBookDraft({ title, description, genreTags, chapterTitle, chapterContent });
+      // 1. Save metadata to BookDraft
+      const metadataPromise = saveBookDraft({ title, description, genreTags });
+
+      // 2. Save chapter 1 to Draft system (bookId/chapterId are null for new books)
+      const chapterPromise = fetch("/api/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookId: null,
+          chapterId: null,
+          title: chapterTitle,
+          content: chapterContent,
+        }),
+      });
+
+      await Promise.all([metadataPromise, chapterPromise]);
+      
       setLastSavedAt(new Date());
       setSaveStatus("saved");
     } catch (err) {
@@ -80,12 +96,21 @@ export function useBookDraftAutoSave({
   // ── beforeunload ───────────────────────────────────────────────────────────
   useEffect(() => {
     const handleBeforeUnload = () => {
-      const payload = JSON.stringify(refs.current);
-      // Use a dedicated book-draft beacon endpoint
-      navigator.sendBeacon(
-        "/api/draft/book",
-        new Blob([payload], { type: "application/json" })
-      );
+      // We send two beacons: one for metadata, one for chapter content
+      const metadata = { 
+        title: refs.current.title, 
+        description: refs.current.description, 
+        genreTags: refs.current.genreTags 
+      };
+      const chapter = {
+        bookId: null,
+        chapterId: null,
+        title: refs.current.chapterTitle,
+        content: refs.current.chapterContent
+      };
+
+      navigator.sendBeacon("/api/draft/book", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+      navigator.sendBeacon("/api/draft", new Blob([JSON.stringify(chapter)], { type: "application/json" }));
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);

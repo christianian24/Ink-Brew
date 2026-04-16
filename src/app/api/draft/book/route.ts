@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { title, description, genreTags, chapterTitle, chapterContent } = body;
+    const { title, description, genreTags, coverImage } = body;
 
     await prisma.bookDraft.upsert({
       where: { authorId: session.user.id },
@@ -19,15 +19,13 @@ export async function POST(req: NextRequest) {
         title: title || "",
         description: description || "",
         genreTags: genreTags || "",
-        chapterTitle: chapterTitle || "",
-        chapterContent: chapterContent || "",
+        coverImage: coverImage || null,
       },
       update: {
         title: title || "",
         description: description || "",
         genreTags: genreTags || "",
-        chapterTitle: chapterTitle || "",
-        chapterContent: chapterContent || "",
+        coverImage: coverImage || null,
         updatedAt: new Date(),
       },
     });

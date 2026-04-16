@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createBookWithChapter } from "@/app/actions/write";
-import { clearBookDraft, getBookDraft } from "@/app/actions/draft";
+import { clearDraftsForNewBook, getBookDraft, getInitialChapterDraft } from "@/app/actions/draft";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import TiptapEditor from "@/components/tiptap-editor";
@@ -65,27 +65,43 @@ export default function WriteForm() {
 
   const router = useRouter();
 
-  // ── Restore BookDraft on mount ─────────────────────────────────────────────
+  // ── Restore Drafts on mount ────────────────────────────────────────────────
   useEffect(() => {
-    getBookDraft().then((draft) => {
-      if (draft) {
-        const hasAnyContent =
-          !!draft.title?.trim() ||
-          !!draft.description?.trim() ||
-          !!draft.genreTags?.trim() ||
-          !!draft.chapterTitle?.trim() ||
-          (!!draft.chapterContent && draft.chapterContent.trim() !== "" && draft.chapterContent.trim() !== "<p></p>");
+    Promise.all([
+      getBookDraft(),
+      getInitialChapterDraft()
+    ]).then(([metadata, chapter]) => {
+      let latestUpdate: Date | null = null;
+      let hasAnyContent = false;
 
-        if (draft.title) setTitle(draft.title);
-        if (draft.description) setDescription(draft.description);
-        if (draft.genreTags) setGenreTags(draft.genreTags);
-        if (draft.chapterTitle) setChapterTitle(draft.chapterTitle);
-        if (draft.chapterContent) setChapterContent(draft.chapterContent);
-
-        // Only show banner if there's something worth restoring
-        if (hasAnyContent) setRestoredAt(new Date(draft.updatedAt));
+      if (metadata) {
+        if (metadata.title) setTitle(metadata.title);
+        if (metadata.description) setDescription(metadata.description);
+        if (metadata.genreTags) setGenreTags(metadata.genreTags);
+        
+        hasAnyContent = hasAnyContent || !!metadata.title?.trim() || !!metadata.description?.trim() || !!metadata.genreTags?.trim();
+        latestUpdate = new Date(metadata.updatedAt);
       }
-      // Always unlock TipTap after fetch (empty or restored)
+
+      if (chapter) {
+        if (chapter.title) setChapterTitle(chapter.title);
+        if (chapter.content) setChapterContent(chapter.content);
+
+        const hasChContent = !!chapter.title?.trim() || (!!chapter.content && chapter.content.trim() !== "" && chapter.content.trim() !== "<p></p>");
+        hasAnyContent = hasAnyContent || hasChContent;
+
+        const chUpdate = new Date(chapter.updatedAt);
+        if (!latestUpdate || chUpdate > latestUpdate) {
+          latestUpdate = chUpdate;
+        }
+      }
+
+      // Only show banner if there's something worth restoring
+      if (hasAnyContent && latestUpdate) {
+        setRestoredAt(latestUpdate);
+      }
+
+      // Always unlock TipTap after fetch
       setDraftLoaded(true);
     });
   }, []);
@@ -121,8 +137,8 @@ export default function WriteForm() {
     try {
       const result = await createBookWithChapter(formData);
       if (result?.bookId) {
-        // Clear the BookDraft after successful publish
-        await clearBookDraft();
+        // Clear both metadata and chapter drafts after successful publish
+        await clearDraftsForNewBook();
         router.push(`/book/${result.bookId}`);
       }
     } catch (e: any) {

@@ -7,8 +7,7 @@ export async function saveBookDraft(data: {
   title: string;
   description: string;
   genreTags: string;
-  chapterTitle: string;
-  chapterContent: string;
+  coverImage?: string | null;
 }) {
   const session = await auth();
   if (!session?.user?.id) return { success: false };
@@ -43,5 +42,41 @@ export async function clearBookDraft() {
 
   await prisma.bookDraft.deleteMany({
     where: { authorId: session.user.id },
+  });
+}
+
+/**
+ * Clears both the metadata and the first chapter draft after publishing a new book.
+ */
+export async function clearDraftsForNewBook() {
+  const session = await auth();
+  if (!session?.user?.id) return;
+
+  await Promise.all([
+    prisma.bookDraft.deleteMany({ where: { authorId: session.user.id } }),
+    prisma.draft.updateMany({
+      where: {
+        authorId: session.user.id,
+        bookId: null,
+        chapterId: null,
+        isArchived: false,
+      },
+      data: { isArchived: true },
+    }),
+  ]);
+}
+
+export async function getInitialChapterDraft() {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  return prisma.draft.findFirst({
+    where: {
+      authorId: session.user.id,
+      bookId: null,
+      chapterId: null,
+      isArchived: false,
+    },
+    orderBy: { updatedAt: "desc" },
   });
 }
