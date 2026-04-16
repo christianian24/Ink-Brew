@@ -235,10 +235,10 @@ model Draft {
   authorId   String
   author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  bookId     String
-  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  bookId     String?
+  book       Book?    @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
-  // null = new chapter being written; populated = editing an existing chapter
+  // null = new chapter being written (no bookId = new book); populated = editing an existing chapter
   chapterId  String?
   chapter    Chapter? @relation(fields: [chapterId], references: [id], onDelete: SetNull)
 
@@ -246,8 +246,8 @@ model Draft {
   updatedAt  DateTime @updatedAt
 
   // Composite unique: one active draft per author+book+chapter.
-  // Note: PostgreSQL treats NULL as distinct in unique indexes, so application-layer
-  // findFirst(isArchived: false) is the enforcement path for chapterId = null.
+  // Note: PostgreSQL treats NULL as distinct in unique columns. 
+  // Application logic must enforce the "one active" rule for bookId/chapterId = null.
   @@unique([authorId, bookId, chapterId, isArchived])
   @@index([authorId, isArchived])
   @@index([bookId])
