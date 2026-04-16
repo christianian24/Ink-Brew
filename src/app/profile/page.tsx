@@ -4,6 +4,12 @@ import { redirect } from "next/navigation";
 import BookCard from "@/components/book-card";
 import { Button } from "@/components/ui/button";
 import { LogOut, BookOpen, Bookmark } from "lucide-react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Your Profile | Ink & Brew",
+  description: "View your authored books and reading list.",
+};
 
 export const dynamic = "force-dynamic";
 

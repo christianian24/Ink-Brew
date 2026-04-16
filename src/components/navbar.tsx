@@ -24,10 +24,8 @@ export default async function Navbar() {
               <Link href="/write" className="text-sm font-medium text-coffee-700 hover:text-coffee-950">
                 Write
               </Link>
-              <Link href="/profile">
-                <Button variant="ghost" size="sm" className="text-coffee-700">
-                  Profile
-                </Button>
+              <Link href="/profile" className="text-sm font-medium text-coffee-700 hover:text-coffee-950">
+                Profile
               </Link>
             </>
           ) : (

@@ -4,8 +4,31 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, BookOpen, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/auth";
+import CommentSection from "@/components/comments/comment-section";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ bookId: string; chapterId: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const book = await prisma.book.findUnique({
+    where: { id: resolvedParams.bookId },
+    select: { title: true }
+  });
+  
+  const chapter = await prisma.chapter.findUnique({
+    where: { id: resolvedParams.chapterId },
+    select: { title: true }
+  });
+
+  if (!chapter || !book) {
+    return { title: "Chapter Not Found | Ink & Brew" };
+  }
+
+  return {
+    title: `${chapter.title} - ${book.title} | Ink & Brew`,
+  };
+}
 
 export default async function ReadChapterPage({
   params,
@@ -59,6 +82,30 @@ export default async function ReadChapterPage({
   const currentIndex = chapter.orderIndex;
   const prevChapter = book.chapters.find((c: any) => c.orderIndex === currentIndex - 1);
   const nextChapter = book.chapters.find((c: any) => c.orderIndex === currentIndex + 1);
+
+  // Fetch the top-level comments and heavily nest the replies up to 3 layers deep!
+  const rootComments = await prisma.comment.findMany({
+    where: { chapterId: chapter.id, parentId: null },
+    include: {
+      user: { select: { name: true, image: true, id: true } },
+      likes: true,
+      replies: {
+        orderBy: { createdAt: 'asc' },
+        include: {
+          user: { select: { name: true, image: true, id: true } },
+          likes: true,
+          replies: {
+            orderBy: { createdAt: 'asc' },
+            include: {
+              user: { select: { name: true, image: true, id: true } },
+              likes: true,
+            }
+          }
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
 
   return (
     <div className="min-h-screen bg-coffee-50 flex flex-col items-center">
@@ -121,6 +168,14 @@ export default async function ReadChapterPage({
             </Link>
           )}
         </div>
+
+        {/* Community Interactive Comment Board */}
+        <CommentSection 
+          bookId={bookId}
+          chapterId={chapterId}
+          currentUserId={session?.user?.id}
+          comments={rootComments}
+        />
       </main>
     </div>
   );

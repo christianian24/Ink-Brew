@@ -1,6 +1,12 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import WriteForm from "@/components/write-form";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Start Writing | Ink & Brew",
+  description: "Pour yourself a cup of coffee and let the words flow. Begin your new story here.",
+};
 
 export const dynamic = "force-dynamic";
 

@@ -1,24 +1,18 @@
-import { prisma } from "@/lib/prisma";
-import BookCard from "@/components/book-card";
+import { getBooksByPage } from "@/app/actions/library";
+import LibraryGrid from "@/components/library-grid";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Library | Ink & Brew",
+  description: "Browse through our collection of published stories. Grab a coffee and find your next favorite book.",
+};
 
 export const dynamic = "force-dynamic";
 
 export default async function LibraryPage() {
-  const books = await prisma.book.findMany({
-    where: {
-      status: "PUBLISHED"
-    },
-    include: {
-      author: {
-        select: {
-          name: true
-        }
-      }
-    },
-    orderBy: {
-      createdAt: "desc"
-    }
-  });
+  // Start by heavily rate-limiting the Server to only download Page 1 (12 books)
+  // The Client Component will silently handle the rest as the user scrolls!
+  const initialBooks = await getBooksByPage(1);
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-16">
@@ -29,18 +23,7 @@ export default async function LibraryPage() {
         </p>
       </div>
 
-      {books.length === 0 ? (
-        <div className="text-center py-24 bg-white rounded-2xl border border-dashed border-coffee-200">
-          <p className="text-coffee-500 font-medium">No books published yet.</p>
-          <p className="text-coffee-400 text-sm mt-1">Check back later or start writing one!</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-8 gap-4">
-          {books.map((book: any) => (
-            <BookCard key={book.id} book={book} />
-          ))}
-        </div>
-      )}
+      <LibraryGrid initialBooks={initialBooks} />
     </div>
   );
 }

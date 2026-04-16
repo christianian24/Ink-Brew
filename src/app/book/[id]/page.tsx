@@ -4,9 +4,32 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Bookmark, Heart, Clock, Users } from "lucide-react";
 import { auth } from "@/auth";
-import { toggleBookmark, toggleLike } from "@/app/actions/social";
+import SocialButtons from "@/components/social-buttons";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const book = await prisma.book.findUnique({
+    where: { id: resolvedParams.id },
+    include: { author: { select: { name: true } } }
+  });
+
+  if (!book) {
+    return { title: "Book Not Found | Ink & Brew" };
+  }
+
+  return {
+    title: `${book.title} by ${book.author.name || "Anonymous"} | Ink & Brew`,
+    description: book.description.substring(0, 160),
+    openGraph: {
+      title: `${book.title} | Ink & Brew`,
+      description: book.description.substring(0, 160),
+      images: book.coverImage ? [book.coverImage] : [],
+    }
+  };
+}
 
 export default async function BookDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   // Await the params object before accessing properties
@@ -77,26 +100,13 @@ export default async function BookDetailsPage({ params }: { params: Promise<{ id
               <Button disabled className="w-full text-lg h-12" size="lg">No Chapters Yet</Button>
             )}
 
-            <div className="flex gap-3">
-              <form action={async () => {
-                "use server";
-                await toggleLike(book.id);
-              }} className="flex-1">
-                <Button variant={isLiked ? "default" : "outline"} className={`w-full gap-2 ${isLiked ? 'bg-red-500 hover:bg-red-600 text-white' : 'border-coffee-300 text-coffee-700'}`}>
-                  <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} /> 
-                  {isLiked ? "Liked" : "Like"} ({book._count.likes})
-                </Button>
-              </form>
-              <form action={async () => {
-                "use server";
-                await toggleBookmark(book.id);
-              }} className="flex-1">
-                <Button variant={isBookmarked ? "default" : "outline"} className={`w-full gap-2 ${isBookmarked ? 'bg-coffee-800 hover:bg-coffee-900 text-white' : 'border-coffee-300 text-coffee-700'}`}>
-                  <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} /> 
-                  {isBookmarked ? "Saved" : "Save"} ({book._count.bookmarks})
-                </Button>
-              </form>
-            </div>
+            <SocialButtons 
+              bookId={book.id} 
+              initialLiked={isLiked} 
+              initialBookmarked={isBookmarked} 
+              initialLikeCount={book._count.likes} 
+              initialBookmarkCount={book._count.bookmarks} 
+            />
           </div>
         </div>
 
