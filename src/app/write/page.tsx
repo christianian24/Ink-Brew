@@ -20,8 +20,8 @@ export default async function WritePage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-16 max-w-4xl">
       <div className="space-y-4 mb-12">
-        <h1 className="text-4xl font-serif font-bold text-coffee-950">Start Writing</h1>
-        <p className="text-coffee-600">
+        <h1 className="text-4xl font-serif font-bold text-coffee-950 dark:text-slate-50">Start Writing</h1>
+        <p className="text-coffee-600 dark:text-slate-400">
           Pour yourself a cup of coffee and let the words flow. Begin your new story here.
         </p>
       </div>

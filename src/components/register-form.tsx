@@ -11,7 +11,7 @@ export default function RegisterForm() {
   return (
     <form action={action} className="space-y-4">
       <div className="space-y-2">
-        <label htmlFor="name" className="text-sm font-medium text-coffee-900">
+        <label htmlFor="name" className="text-sm font-medium text-coffee-900 dark:text-slate-200">
           Name
         </label>
         <Input
@@ -21,10 +21,11 @@ export default function RegisterForm() {
           required
           autoComplete="name"
           placeholder="Jane Doe"
+          className="dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
         />
       </div>
       <div className="space-y-2">
-        <label htmlFor="email" className="text-sm font-medium text-coffee-900">
+        <label htmlFor="email" className="text-sm font-medium text-coffee-900 dark:text-slate-200">
           Email
         </label>
         <Input
@@ -34,10 +35,11 @@ export default function RegisterForm() {
           required
           autoComplete="email"
           placeholder="reader@inkandbrew.com"
+          className="dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500"
         />
       </div>
       <div className="space-y-2">
-        <label htmlFor="password" className="text-sm font-medium text-coffee-900">
+        <label htmlFor="password" className="text-sm font-medium text-coffee-900 dark:text-slate-200">
           Password
         </label>
         <Input
@@ -46,6 +48,7 @@ export default function RegisterForm() {
           type="password"
           required
           autoComplete="new-password"
+          className="dark:bg-slate-950 dark:border-slate-800 dark:text-slate-100"
         />
       </div>
 
@@ -53,7 +56,7 @@ export default function RegisterForm() {
         <div className="text-sm text-red-500 font-medium">{state.message}</div>
       )}
 
-      <Button type="submit" className="w-full" disabled={isPending}>
+      <Button type="submit" className="w-full dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white" disabled={isPending}>
         {isPending ? "Joining..." : "Join Now"}
       </Button>
     </form>

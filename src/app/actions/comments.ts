@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { notifyOnComment } from "@/app/actions/notifications";
 
 export async function postComment(bookId: string, chapterId: string, content: string, parentId?: string | null) {
   const session = await auth();
@@ -14,7 +15,7 @@ export async function postComment(bookId: string, chapterId: string, content: st
     throw new Error("Comment cannot be empty");
   }
 
-  await prisma.comment.create({
+  const comment = await prisma.comment.create({
     data: {
       content: content.trim(),
       chapterId,
@@ -22,6 +23,35 @@ export async function postComment(bookId: string, chapterId: string, content: st
       parentId: parentId || null,
     }
   });
+
+  // Track D: fire notification after successful comment
+  try {
+    const chapter = await prisma.chapter.findUnique({
+      where: { id: chapterId },
+      include: { book: { select: { id: true, authorId: true } } },
+    });
+    if (chapter?.book) {
+      let parentUserId: string | null = null;
+      if (parentId) {
+        const parentComment = await prisma.comment.findUnique({
+          where: { id: parentId },
+          select: { userId: true },
+        });
+        parentUserId = parentComment?.userId ?? null;
+      }
+      await notifyOnComment({
+        commenterId: session.user.id,
+        commenterName: session.user.name ?? "Someone",
+        bookId: chapter.book.id,
+        chapterId,
+        chapterTitle: chapter.title,
+        parentCommentUserId: parentUserId,
+        bookAuthorId: chapter.book.authorId,
+      });
+    }
+  } catch (err) {
+    console.error("[postComment] notification failed:", err);
+  }
 
   revalidatePath(`/read/${bookId}/${chapterId}`);
   return { success: true };

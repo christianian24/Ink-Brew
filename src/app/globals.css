@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Tell Tailwind v4 to use the .dark class (set by next-themes) instead of the OS media query */
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-coffee-50: #fdfaf6;
   --color-coffee-100: #f4ece1;
@@ -30,5 +33,18 @@
   body {
     background-color: var(--background);
     color: var(--foreground);
+  }
+
+  /* TipTap placeholder */
+  .ProseMirror p.is-editor-empty:first-child::before {
+    color: #d6b89c; /* coffee-300 */
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+  }
+
+  .dark .ProseMirror p.is-editor-empty:first-child::before {
+    color: #64748b; /* slate-500 */
   }
 }

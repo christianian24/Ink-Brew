@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -16,6 +17,11 @@ model User {
   password      String?
   role          String    @default("USER") // USER, AUTHOR, ADMIN
 
+  // Reading streak tracking
+  currentStreak Int       @default(0)
+  longestStreak Int       @default(0)
+  lastReadDate  DateTime?
+
   accounts      Account[]
   sessions      Session[]
   books         Book[]
@@ -25,6 +31,10 @@ model User {
   notifications Notification[]
   reports       Report[]
   readingProgress ReadingProgress[]
+  drafts        Draft[]
+  bookDraft     BookDraft?
+  following     Follow[]  @relation("Following")
+  followers     Follow[]  @relation("Followers")
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -70,7 +80,7 @@ model Book {
   title       String
   description String
   coverImage  String?
-  genreTags   String   // Stored as comma separated tags
+  genreTags   String   // Stored as comma-separated tags; normalize to BookGenre when scale > 1k books
   status      String   @default("DRAFT") // DRAFT, PUBLISHED
   
   authorId    String
@@ -80,9 +90,13 @@ model Book {
   bookmarks   Bookmark[]
   likes       Like[]
   reports     Report[]
+  drafts      Draft[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([authorId])
 }
 
 model Chapter {
@@ -99,13 +113,18 @@ model Chapter {
   likes       Like[]
   comments    Comment[]
   readingProgress ReadingProgress[]
+  drafts      Draft[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([bookId])
+  @@index([orderIndex])
 }
 
 model Bookmark {
   id        String   @id @default(cuid())
+  type      String   @default("BOOKMARK") // BOOKMARK, WANT_TO_READ
   
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -119,7 +138,7 @@ model Bookmark {
   createdAt DateTime @default(now())
 
   // To prevent duplicates
-  @@unique([userId, bookId]) 
+  @@unique([userId, bookId, type]) 
   @@unique([userId, chapterId])
 }
 
@@ -205,4 +224,61 @@ model ReadingProgress {
   updatedAt   DateTime @updatedAt
 
   @@unique([userId, chapterId])
+}
+
+model Draft {
+  id         String   @id @default(cuid())
+  title      String   @default("")
+  content    String
+  isArchived Boolean  @default(false)
+
+  authorId   String
+  author     User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  bookId     String
+  book       Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  // null = new chapter being written; populated = editing an existing chapter
+  chapterId  String?
+  chapter    Chapter? @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Composite unique: one active draft per author+book+chapter.
+  // Note: PostgreSQL treats NULL as distinct in unique indexes, so application-layer
+  // findFirst(isArchived: false) is the enforcement path for chapterId = null.
+  @@unique([authorId, bookId, chapterId, isArchived])
+  @@index([authorId, isArchived])
+  @@index([bookId])
+  @@index([chapterId])
+}
+
+model BookDraft {
+  id          String   @id @default(cuid())
+  title       String   @default("")
+  description String   @default("")
+  genreTags   String   @default("")
+  coverImage  String?
+
+  // One pre-creation draft per author (book does not exist yet)
+  authorId    String   @unique
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+
+  followerId  String
+  follower    User     @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+
+  followingId String
+  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
 }

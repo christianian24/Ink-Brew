@@ -54,7 +54,7 @@ export default function SocialButtons({
           className={`w-full gap-2 transition-all ${
             optimisticLike.isLiked
               ? "bg-red-500 hover:bg-red-600 text-white border-red-500"
-              : "border-coffee-300 text-coffee-700"
+              : "border-coffee-300 dark:border-slate-700 text-coffee-700 dark:text-slate-300"
           }`}
         >
           <Heart className={`w-4 h-4 ${optimisticLike.isLiked ? "fill-current" : ""}`} />
@@ -75,8 +75,8 @@ export default function SocialButtons({
           variant={optimisticBookmark.isBookmarked ? "default" : "outline"}
           className={`w-full gap-2 transition-all ${
             optimisticBookmark.isBookmarked
-              ? "bg-coffee-800 hover:bg-coffee-900 text-white border-coffee-800"
-              : "border-coffee-300 text-coffee-700"
+              ? "bg-coffee-800 dark:bg-slate-800 hover:bg-coffee-900 dark:hover:bg-slate-700 text-white dark:text-slate-50 border-coffee-800 dark:border-slate-800"
+              : "border-coffee-300 dark:border-slate-700 text-coffee-700 dark:text-slate-300"
           }`}
         >
           <Bookmark className={`w-4 h-4 ${optimisticBookmark.isBookmarked ? "fill-current" : ""}`} />
