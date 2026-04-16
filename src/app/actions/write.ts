@@ -26,6 +26,9 @@ export async function createBookWithChapter(formData: FormData) {
 
   let uploadedCoverUrl = null;
   if (coverImageFile && coverImageFile.size > 0) {
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      throw new Error("Vercel Blob token not found. Please ensure BLOB_READ_WRITE_TOKEN is set in your environment variables.");
+    }
     const blob = await put(`covers/${Date.now()}-${coverImageFile.name}`, coverImageFile, {
       access: 'public',
     });
